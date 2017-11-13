@@ -6,6 +6,7 @@ import com.myob.models.User
 import com.myob.requests.bodies.{AuthenticateUserRequest, CreateUserRequest}
 import com.myob.utils.ConfigUtils
 import constants.EnvValueNames.USER_SERVICE_URL
+import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
 import utils.ResponseUtils
 
@@ -18,15 +19,15 @@ class UserServiceImpl @Inject()(wsClient: WSClient)(implicit executionContext: E
   private def getUserServiceUrl(): Future[String] =
     Future.fromTry(ConfigUtils.getEnvValueAsTry(USER_SERVICE_URL))
 
-  private def makeRequest[A](path: String, requestBody: A): Future[User] = for
+  private def makeRequest[A](path: String, requestBody: A)(implicit writes: Writes[A]): Future[User] = for
     {
       userServiceUrl <- getUserServiceUrl()
 
       urlEndPoint = s"$userServiceUrl/$path"
 
-      response <- wsClient.url(urlEndPoint).post[A](requestBody)
+      response <- wsClient.url(urlEndPoint).post(Json.toJson(requestBody))
 
-      user <- ResponseUtils.getData[User](response)
+      user <- Future.fromTry(ResponseUtils.getData[User](response))
     }
     yield user
 

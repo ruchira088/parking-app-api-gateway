@@ -6,7 +6,7 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 
-#POST    /user
+POST    /user                       controllers.UserServiceController.createUser()
 #POST    /login
 
 # Map static resources from the /public folder to the /assets URL path
