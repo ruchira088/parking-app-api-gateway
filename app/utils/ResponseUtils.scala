@@ -1,12 +1,12 @@
 package utils
 
-import com.myob.exceptions.JsonDeserializationException
-import exceptions.HttpResponseException
+import com.myob.exceptions.HttpResponseException
+import com.myob.utils.JsonUtils
 import play.api.http.Status
 import play.api.libs.json.Reads
 import play.api.libs.ws.WSResponse
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 object ResponseUtils
 {
@@ -14,9 +14,5 @@ object ResponseUtils
     if (response.status >= Status.BAD_REQUEST)
       Failure(HttpResponseException(response.status, response.body))
     else
-      response.json.validate[A]
-        .fold(
-          validationErrors => Failure(JsonDeserializationException(validationErrors)),
-          Success(_)
-        )
+      JsonUtils.deserialize(response.json)
 }
